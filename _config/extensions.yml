@@ -1,0 +1,6 @@
+---
+Name: businessdata-extensions
+---
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Roseblade\BusinessData\DataExtension\SiteConfigExtension

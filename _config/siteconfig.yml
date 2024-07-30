@@ -1,0 +1,5 @@
+---
+Name: businessdata-siteconfig
+---
+Roseblade\BusinessData\DataExtension\SiteConfigExtension:
+  update_geodata_by_api: true
