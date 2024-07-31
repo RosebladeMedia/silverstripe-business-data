@@ -2,6 +2,7 @@
 
 namespace Roseblade\BusinessData\DataExtension;
 
+use BeastBytes\PostcodesIo\PostcodesIo;
 use Innoweb\InternationalPhoneNumberField\Forms\InternationalPhoneNumberField;
 use League\Flysystem\Config;
 use League\ISO3166\ISO3166;
@@ -224,20 +225,20 @@ class SiteConfigExtension extends DataExtension
 	public function onBeforeWrite(): void
 	{
 		/** Has post code changed, and lat/long not? */
-		if (($this->owner->isChanged('BusinessDataPostalCode')) && (!$this->owner->isChanged('BusinessDataGeoLatitude')) && (!$this->owner->isChanged('BusinessDataGeoLongitude')))
+		if (($this->owner->isChanged('BusinessDataPostalCode')) && (!$this->owner->isChanged('BusinessDataGeoLatitude')) &&
+			(!$this->owner->isChanged('BusinessDataGeoLongitude')) && (!empty($this->owner->BusinessDataPostalCode))
+		)
 		{
 			/** Update the lat/long from an API, unless disabled */
 			if (self::config()->update_geodata_by_api)
 			{
-				$postCode 		= str_replace(" ", "", $this->owner->BusinessDataPostalCode);
-
 				/** Call data from API */
-				if ($postCodeData 	= file_get_contents('https://api.postcodes.io/postcodes/' . $postCode))
-				{
-					$postCodeData 	= json_decode($postCodeData);
+				$postcodeIo 	= new PostcodesIo();
 
-					$this->owner->BusinessDataGeoLatitude 	= $postCodeData->result->latitude;
-					$this->owner->BusinessDataGeoLongitude 	= $postCodeData->result->longitude;
+				if ($postCodeData 	= $postcodeIo->postcodeLookup($this->owner->BusinessDataPostalCode))
+				{
+					$this->owner->BusinessDataGeoLatitude 	= $postCodeData['latitude'];
+					$this->owner->BusinessDataGeoLongitude 	= $postCodeData['longitude'];
 				}
 			}
 		}
