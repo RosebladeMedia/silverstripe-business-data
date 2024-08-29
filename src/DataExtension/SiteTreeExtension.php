@@ -180,11 +180,9 @@ class SiteTreeExtension extends DataExtension
 		$icon 		= $siteConfig->FavIcon;
 		$function 	= $this->owner->config()->icon_size_function;
 
-		echo $function;
-
+		/** Padding is the only one with 3 parameters (for the fill) */
 		if (strtolower($function) == "pad")
 		{
-
 			return $icon->Pad($sizeH, $sizeW, $this->owner->config()->icon_fill);
 		}
 		else
