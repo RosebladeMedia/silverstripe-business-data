@@ -4,10 +4,10 @@ namespace Roseblade\BusinessData\DataExtension;
 
 use BeastBytes\PostcodesIo\PostcodesIo;
 use Innoweb\InternationalPhoneNumberField\Forms\InternationalPhoneNumberField;
-use League\Flysystem\Config;
 use League\ISO3166\ISO3166;
 use Roseblade\BusinessData\DataObject\SocialNetwork;
 use Sheadawson\DependentDropdown\Forms\DependentDropdownField;
+
 use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Assets\Image;
 use SilverStripe\Core\Config\Configurable;
@@ -278,5 +278,165 @@ class SiteConfigExtension extends DataExtension
 			$address[]	= $this->owner->BusinessDataPostalCode;
 
 		return $address;
+	}
+
+	//--------------------------------------------------------------------------
+
+	/**
+	 * Returns an array of data suitable for microdata markup
+	 *
+	 * @return array
+	 */
+	public function getMicroDataSchemaData(): array
+	{
+		$data = [
+			'@context'          =>  'http://schema.org',
+			'@type'             =>  $this->owner->BusinessDataMainSchema,
+			'@id'               =>  $this->owner->BusinessDataSubSchema,
+			'mainEntityOfPage'  =>  $this->owner->SiteURL,
+		];
+
+		/** Add in the basics from the SiteConfig */
+		if ($this->owner->BusinessDataSiteName)
+		{
+			$data['name'] = $this->owner->BusinessDataSiteName;
+		}
+
+		if ($this->owner->BusinessDataSiteDescription)
+		{
+			$data['description'] = $this->owner->BusinessDataSiteDescription;
+		}
+
+		/** Add logo */
+		$logo 	= $this->owner->LogoImage;
+
+		if (($logo) && ($logo->exists()))
+		{
+			$data['logo'] = [
+				'@type'     =>  'ImageObject',
+				'url'       =>  $logo->getAbsoluteURL(),
+				'width'     =>  $logo->getWidth() . 'px',
+				'height'    =>  $logo->getHeight() . 'px'
+			];
+		}
+
+		if ($this->owner->SiteURL)
+		{
+			$data['url'] = $this->owner->SiteURL;
+		}
+
+		/** Check that we at least have part of the address */
+		if ($this->owner->BusinessDataStreetAddress || $this->owner->BusinessDataAddressLocality || $this->owner->BusinessDataPostalCode)
+		{
+			$address = [
+				'@type'     =>  'PostalAddress'
+			];
+
+			if ($this->owner->BusinessDataAddressCountry)
+			{
+				$address['addressCountry'] = $this->owner->BusinessDataAddressCountry;
+			}
+			if ($this->owner->BusinessDataAddressLocality)
+			{
+				$address['addressLocality'] = $this->owner->BusinessDataAddressLocality;
+			}
+			if ($this->owner->BusinessDataAddressRegion)
+			{
+				$address['addressRegion'] = $this->owner->BusinessDataAddressRegion;
+			}
+			if ($this->owner->BusinessDataPostalCode)
+			{
+				$address['postalCode'] = $this->owner->BusinessDataPostalCode;
+			}
+			if ($this->owner->BusinessDataStreetAddress)
+			{
+				$address['streetAddress'] = $this->owner->BusinessDataStreetAddress;
+			}
+
+			$data['address'] = $address;
+		}
+
+		/** Add lat/long if applicable */
+		if ($this->owner->BusinessDataGeoLongitude && $this->owner->BusinessDataGeoLatitude)
+		{
+			$coordinates = array(
+				'@type'     =>  'GeoCoordinates',
+				'latitude'  =>  $this->owner->BusinessDataGeoLatitude,
+				'longitude' =>  $this->owner->BusinessDataGeoLongitude,
+			);
+		}
+
+		/** Include contact details, if they're set */
+		if ($this->owner->BusinessDataMainTelephone)
+		{
+			$data['telephone'] = $this->owner->BusinessDataMainTelephone;
+		}
+		if ($this->owner->BusinessDataMainEmail)
+		{
+			$data['email'] = $this->owner->BusinessDataMainEmail;
+		}
+
+		/** Include co-ordinates and a map, if applicable */
+		if (isset($coordinates))
+		{
+			$data['geo'] = $coordinates;
+		}
+
+		if ($this->owner->getMicroDataSchemaType(true) === 'LocalBusiness')
+		{
+			if ($this->owner->getSocialMetaMapLink())
+			{
+				$data['hasMap'] = $this->owner->getSocialMetaMapLink();
+			}
+		}
+
+		/** Include any social networks */
+		$socialNetworks = $this->owner->SocialNetworks();
+
+		if (($socialNetworks) && (count($socialNetworks) > 0))
+		{
+			$sameAs = [];
+
+			foreach ($socialNetworks as $network)
+			{
+				$sameAs[] = $network->URL;
+			}
+
+			$data['sameAs'] = $sameAs;
+		}
+
+		$this->owner->invokeWithExtensions('updateSchemaData', $data);
+
+		return $data;
+	}
+
+	/** Returns the schema type */
+	public function getMicroDataSchemaType($baseTypeOnly = false): bool
+	{
+		return ($this->owner->BusinessDataSubSchema && !$baseTypeOnly)
+			? $this->owner->BusinessDataSubSchema
+			: $this->owner->BusinessDataMainSchema;
+	}
+
+	/**
+	 * Returns a Google Maps link for the organisation
+	 *
+	 * @return string
+	 */
+	public function getSocialMetaMapLink(): string
+	{
+		$address 	= $this->owner->getAddressArray();
+
+		if (!empty($this->owner->BusinessDataLegalName))
+		{
+			$address 	= array_merge([$this->owner->BusinessDataLegalName], $address);
+		}
+
+		if (!empty($address))
+		{
+			return 'https://www.google.co.uk/maps/place/' . urlencode(implode(", ", $address));
+		}
+
+		return null;
 	}
 }

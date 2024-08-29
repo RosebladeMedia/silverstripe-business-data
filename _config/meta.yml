@@ -1,0 +1,7 @@
+---
+Name: businessdata-meta
+---
+SilverStripe\CMS\Model\SiteTree:
+  include_site_jsonld: "home"
+Roseblade\BusinessData\DataExtension\SiteTreeExtension:
+  minify_jsonld: true
