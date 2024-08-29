@@ -1,0 +1,27 @@
+---
+Name: businessdata-icons
+---
+Roseblade\BusinessData\DataExtension\SiteTreeExtension:
+  icon_size_function: pad
+  icon_fill: "#ffffff"
+  icons:
+    # Default sizes based on HubSpot article:
+    # https://blog.hubspot.com/website/what-is-a-favicon#:~:text=Below%20are%20some%20of%20the%20most%20common%20sizes%20for%20favicons%20and%20their%20unique%20purposes.
+    - rel: icon
+      sizes: 16x16
+      type: "{getMimeType}"
+    - rel: icon
+      sizes: 32x32
+      type: "{getMimeType}"
+    - rel: icon
+      sizes: 96x96
+      type: "{getMimeType}"
+    - rel: icon
+      sizes: 180x180
+      type: "{getMimeType}"
+    - rel: icon
+      sizes: 300x300
+      type: "{getMimeType}"
+    - rel: icon
+      sizes: 512x512
+      type: "{getMimeType}"

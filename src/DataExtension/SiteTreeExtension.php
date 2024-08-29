@@ -12,7 +12,24 @@ class SiteTreeExtension extends DataExtension
 	public const INCLUDE_SITE_JSONLD_HOME = 'home';
 	public const INCLUDE_SITE_JSONLD_ALL = 'all';
 
-	private static $minify_jsonld = true;
+	/**
+	 * Whether or not to minify JSON
+	 * 
+	 * @var bool
+	 */
+	private static $minify_jsonld 	= true;
+
+	/**
+	 * Whether or not to include icon files
+	 * 
+	 * @var bool
+	 */
+	private static $include_icons 	= true;
+
+	private static $icon_size		= 'Pad';
+	private static $icon_fill 		= "#ffffff";
+
+	//--------------------------------------------------------------------------
 
 	/**
 	 * Adjusts the meta tags for the page to include our custom ones
@@ -48,7 +65,16 @@ class SiteTreeExtension extends DataExtension
 				'content' => json_encode($schemaData, $options)
 			];
 		}
+
+		$icons 	= $this->owner->getIconCode();
+
+		if (!empty($icons))
+		{
+			$tags 	= array_merge($tags, $icons);
+		}
 	}
+
+	//--------------------------------------------------------------------------
 
 	/**
 	 * Mark the page to include site jsonld data on this page
@@ -87,5 +113,83 @@ class SiteTreeExtension extends DataExtension
 
 		/** If it's reached this point, we don't need it. Return false */
 		return false;
+	}
+
+	//--------------------------------------------------------------------------
+
+	/**
+	 * Generates an array of icons to be used in the meta tag area
+	 *
+	 * @return array
+	 */
+	public function getIconCode(): array
+	{
+		$siteConfig = SiteConfig::current_site_config();
+
+		$icons 		= [];
+
+		if (isset($siteConfig->FavIcon))
+		{
+			$count 		= 0;
+			$newSizeH	= 256;
+			$newSizeW	= 256;
+
+			foreach ($this->owner->config()->icons as $icon)
+			{
+				if (isset($icon['sizes']))
+				{
+					list($newSizeH, $newSizeW) 	= explode("x", $icon['sizes']);
+				}
+
+				$newIcon 		= $this->getIconFile($newSizeH, $newSizeW);
+				$icon['href']	= $newIcon->AbsoluteLink();
+
+				foreach ($icon as $attr => $val)
+				{
+					if ((strpos($val, "{") !== false) && (strpos($val, "}")) !== false)
+					{
+						$func 			= str_replace(['{', '}'], '', $val);
+						$val 			= str_replace("{" . $func . "}", $newIcon->{$func}(), $val);
+						$icon[$attr]	= $val;
+					}
+				}
+
+				$icons[$count]	= [
+					'tag'			=> 'link',
+					'attributes'	=> $icon
+				];
+
+				$count++;
+			}
+		}
+
+		return $icons;
+	}
+
+	/**
+	 * Generates a new icon in the given size
+	 *
+	 * @param mixed $sizeH
+	 * @param mixed $sizeW
+	 * 
+	 * @return [type]
+	 */
+	public function getIconFile($sizeH, $sizeW)
+	{
+		$siteConfig = SiteConfig::current_site_config();
+		$icon 		= $siteConfig->FavIcon;
+		$function 	= $this->owner->config()->icon_size_function;
+
+		echo $function;
+
+		if (strtolower($function) == "pad")
+		{
+
+			return $icon->Pad($sizeH, $sizeW, $this->owner->config()->icon_fill);
+		}
+		else
+		{
+			return $icon->{$function}($sizeH, $sizeW);
+		}
 	}
 }
