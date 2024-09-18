@@ -142,24 +142,28 @@ class SiteTreeExtension extends DataExtension
 				}
 
 				$newIcon 		= $this->getIconFile($newSizeH, $newSizeW);
-				$icon['href']	= $newIcon->AbsoluteLink();
 
-				foreach ($icon as $attr => $val)
+				if (!empty($newIcon))
 				{
-					if ((strpos($val, "{") !== false) && (strpos($val, "}")) !== false)
+					$icon['href']	= $newIcon->AbsoluteLink();
+
+					foreach ($icon as $attr => $val)
 					{
-						$func 			= str_replace(['{', '}'], '', $val);
-						$val 			= str_replace("{" . $func . "}", $newIcon->{$func}(), $val);
-						$icon[$attr]	= $val;
+						if ((strpos($val, "{") !== false) && (strpos($val, "}")) !== false)
+						{
+							$func 			= str_replace(['{', '}'], '', $val);
+							$val 			= str_replace("{" . $func . "}", $newIcon->{$func}(), $val);
+							$icon[$attr]	= $val;
+						}
 					}
+
+					$icons[$count]	= [
+						'tag'			=> 'link',
+						'attributes'	=> $icon
+					];
+
+					$count++;
 				}
-
-				$icons[$count]	= [
-					'tag'			=> 'link',
-					'attributes'	=> $icon
-				];
-
-				$count++;
 			}
 		}
 
@@ -183,11 +187,13 @@ class SiteTreeExtension extends DataExtension
 		/** Padding is the only one with 3 parameters (for the fill) */
 		if (strtolower($function) == "pad")
 		{
-			return $icon->Pad($sizeH, $sizeW, $this->owner->config()->icon_fill);
+			$newIcon 	= $icon->Pad($sizeH, $sizeW, $this->owner->config()->icon_fill);
+			return $newIcon;
 		}
 		else
 		{
-			return $icon->{$function}($sizeH, $sizeW);
+			$newIcon 	= $icon->{$function}($sizeH, $sizeW);
+			return $newIcon;
 		}
 	}
 }
