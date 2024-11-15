@@ -3,12 +3,15 @@
 namespace Roseblade\BusinessData\DataObject;
 
 use BurnBright\ExternalURLField\ExternalURLField;
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\SiteConfig\SiteConfig;
 
 class SocialNetwork extends DataObject
 {
+	use Configurable;
+
 	private static $table_name = 'Roseblade_SocialNetworks';
 
 	/**
@@ -17,7 +20,7 @@ class SocialNetwork extends DataObject
 	 * 
 	 * @var array
 	 */
-	private array $network_list_default = [
+	private static $network_list = [
 		'facebook-f'	=> 'Facebook',
 		'twitter'		=> 'Twitter',
 		'pinterest'		=> 'Pinterest',
@@ -71,8 +74,6 @@ class SocialNetwork extends DataObject
 	public function getNetworkList()
 	{
 		$networks = self::config()->network_list;
-
-		$networks = $networks ? $networks : $this->network_list_default;
 
 		asort($networks);
 
