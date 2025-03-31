@@ -4,7 +4,7 @@
 	"description": "Adds standard business data to the website",
 	"require": {
 		"league/iso3166": "^4.3",
-		"innoweb/silverstripe-international-phone-number-field": "5.0.0",
+		"innoweb/silverstripe-international-phone-number-field": "^5.3",
 		"sheadawson/silverstripe-dependentdropdownfield": "^3.0",
 		"fromholdio/silverstripe-externalurlfield": "^1.1",
 		"beastbytes/postcodesio": "^1.0"
