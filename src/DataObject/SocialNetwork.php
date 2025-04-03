@@ -22,6 +22,17 @@ class SocialNetwork extends DataObject
 	 */
 	private static $network_list = [];
 
+	private $default_network_list = [
+		"facebook-f"	=> "Facebook",
+		"twitter"		=> "Twitter",
+		"pinterest"		=> "Pinterest",
+		"youtube"		=> "YouTube",
+		"vimeo-v"		=> "Vimeo",
+		"instagram"		=> "Instagram",
+		"tiktok"		=> "TikTok",
+		"linkedin-in"	=> "LinkedIn"
+	];
+
 	/**
 	 * Database fields
 	 * 
@@ -65,6 +76,11 @@ class SocialNetwork extends DataObject
 	public function getNetworkList()
 	{
 		$networks = self::config()->network_list;
+
+		if (empty($networks))
+		{
+			$networks = $this->default_network_list;
+		}
 
 		asort($networks);
 
