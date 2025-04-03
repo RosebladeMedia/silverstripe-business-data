@@ -20,16 +20,7 @@ class SocialNetwork extends DataObject
 	 * 
 	 * @var array
 	 */
-	private static $network_list = [
-		'facebook-f'	=> 'Facebook',
-		'twitter'		=> 'Twitter',
-		'pinterest'		=> 'Pinterest',
-		'youtube'		=> 'YouTube',
-		'vimeo-v'		=> 'Vimeo',
-		'instagram'		=> 'Instagram',
-		'tiktok'		=> 'TikTok',
-		'linkedin-in'	=> 'LinkedIn'
-	];
+	private static $network_list = [];
 
 	/**
 	 * Database fields
