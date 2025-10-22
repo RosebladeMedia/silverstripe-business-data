@@ -5,7 +5,7 @@
 	"require": {
 		"league/iso3166": "^4.3",
 		"innoweb/silverstripe-international-phone-number-field": "^6.0",
-		"sheadawson/silverstripe-dependentdropdownfield": "^3.0",
+		"sheadawson/silverstripe-dependentdropdownfield": "dev-master",
 		"fromholdio/silverstripe-externalurlfield": "^2.0",
 		"beastbytes/postcodesio": "^1.0"
 	}
