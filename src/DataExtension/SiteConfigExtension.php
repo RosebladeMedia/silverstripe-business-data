@@ -19,15 +19,13 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\FieldType\DBField;
 
 /**
  * Adds custom fields to include business communication,
  * address and other related fields
  */
-class SiteConfigExtension extends DataExtension
+class SiteConfigExtension extends \SilverStripe\Core\Extension
 {
 	use Configurable;
 
@@ -117,7 +115,7 @@ class SiteConfigExtension extends DataExtension
 		);
 
 		/** Main contact details */
-		$allCountries 	= ArrayList::create((new ISO3166())->all());
+		$allCountries 	= \SilverStripe\Model\List\ArrayList::create((new ISO3166())->all());
 
 		$fields->addFieldsToTab(
 			'Root.Business.Contact.Address',
@@ -147,7 +145,7 @@ class SiteConfigExtension extends DataExtension
 		/** Social media networks */
 		$fields->addFieldToTab(
 			'Root.Business.Contact.Social',
-			$fieldSocialNetworks 	= GridField::create('SocialNetworks', 'Social Networks', $this->owner->SocialNetworks())
+			$fieldSocialNetworks 	= GridField::create('SocialNetworks', 'Social Networks', $this->getOwner()->SocialNetworks())
 		);
 
 		$config = GridFieldConfig_RecordEditor::create();
@@ -225,8 +223,8 @@ class SiteConfigExtension extends DataExtension
 	public function onBeforeWrite(): void
 	{
 		/** Has post code changed, and lat/long not? */
-		if (($this->owner->isChanged('BusinessDataPostalCode')) && (!$this->owner->isChanged('BusinessDataGeoLatitude')) &&
-			(!$this->owner->isChanged('BusinessDataGeoLongitude')) && (!empty($this->owner->BusinessDataPostalCode))
+		if (($this->getOwner()->isChanged('BusinessDataPostalCode')) && (!$this->getOwner()->isChanged('BusinessDataGeoLatitude')) &&
+			(!$this->getOwner()->isChanged('BusinessDataGeoLongitude')) && (!empty($this->getOwner()->BusinessDataPostalCode))
 		)
 		{
 			/** Update the lat/long from an API, unless disabled */
@@ -235,10 +233,10 @@ class SiteConfigExtension extends DataExtension
 				/** Call data from API */
 				$postcodeIo 	= new PostcodesIo();
 
-				if ($postCodeData 	= $postcodeIo->postcodeLookup($this->owner->BusinessDataPostalCode))
+				if ($postCodeData 	= $postcodeIo->postcodeLookup($this->getOwner()->BusinessDataPostalCode))
 				{
-					$this->owner->BusinessDataGeoLatitude 	= $postCodeData['latitude'];
-					$this->owner->BusinessDataGeoLongitude 	= $postCodeData['longitude'];
+					$this->getOwner()->BusinessDataGeoLatitude 	= $postCodeData['latitude'];
+					$this->getOwner()->BusinessDataGeoLongitude 	= $postCodeData['longitude'];
 				}
 			}
 		}
@@ -265,17 +263,17 @@ class SiteConfigExtension extends DataExtension
 	{
 		$address	= [];
 
-		if (!empty($this->owner->BusinessDataStreetAddress))
-			$address[]	= $this->owner->BusinessDataStreetAddress;
+		if (!empty($this->getOwner()->BusinessDataStreetAddress))
+			$address[]	= $this->getOwner()->BusinessDataStreetAddress;
 
-		if (!empty($this->owner->BusinessDataAddressLocality))
-			$address[]	= $this->owner->BusinessDataAddressLocality;
+		if (!empty($this->getOwner()->BusinessDataAddressLocality))
+			$address[]	= $this->getOwner()->BusinessDataAddressLocality;
 
-		if (!empty($this->owner->BusinessDataAddressRegion))
-			$address[]	= $this->owner->BusinessDataAddressRegion;
+		if (!empty($this->getOwner()->BusinessDataAddressRegion))
+			$address[]	= $this->getOwner()->BusinessDataAddressRegion;
 
-		if (!empty($this->owner->BusinessDataPostalCode))
-			$address[]	= $this->owner->BusinessDataPostalCode;
+		if (!empty($this->getOwner()->BusinessDataPostalCode))
+			$address[]	= $this->getOwner()->BusinessDataPostalCode;
 
 		return $address;
 	}
@@ -291,24 +289,24 @@ class SiteConfigExtension extends DataExtension
 	{
 		$data = [
 			'@context'          =>  'http://schema.org',
-			'@type'             =>  $this->owner->BusinessDataMainSchema,
-			'@id'               =>  $this->owner->BusinessDataSubSchema,
-			'mainEntityOfPage'  =>  $this->owner->SiteURL,
+			'@type'             =>  $this->getOwner()->BusinessDataMainSchema,
+			'@id'               =>  $this->getOwner()->BusinessDataSubSchema,
+			'mainEntityOfPage'  =>  $this->getOwner()->SiteURL,
 		];
 
 		/** Add in the basics from the SiteConfig */
-		if ($this->owner->BusinessDataSiteName)
+		if ($this->getOwner()->BusinessDataSiteName)
 		{
-			$data['name'] = $this->owner->BusinessDataSiteName;
+			$data['name'] = $this->getOwner()->BusinessDataSiteName;
 		}
 
-		if ($this->owner->BusinessDataSiteDescription)
+		if ($this->getOwner()->BusinessDataSiteDescription)
 		{
-			$data['description'] = $this->owner->BusinessDataSiteDescription;
+			$data['description'] = $this->getOwner()->BusinessDataSiteDescription;
 		}
 
 		/** Add logo */
-		$logo 	= $this->owner->LogoImage;
+		$logo 	= $this->getOwner()->LogoImage;
 
 		if (($logo) && ($logo->exists()))
 		{
@@ -320,60 +318,56 @@ class SiteConfigExtension extends DataExtension
 			];
 		}
 
-		if ($this->owner->SiteURL)
+		if ($this->getOwner()->SiteURL)
 		{
-			$data['url'] = $this->owner->SiteURL;
+			$data['url'] = $this->getOwner()->SiteURL;
 		}
 
 		/** Check that we at least have part of the address */
-		if ($this->owner->BusinessDataStreetAddress || $this->owner->BusinessDataAddressLocality || $this->owner->BusinessDataPostalCode)
+		if ($this->getOwner()->BusinessDataStreetAddress || $this->getOwner()->BusinessDataAddressLocality || $this->getOwner()->BusinessDataPostalCode)
 		{
 			$address = [
 				'@type'     =>  'PostalAddress'
 			];
 
-			if ($this->owner->BusinessDataAddressCountry)
+			if ($this->getOwner()->BusinessDataAddressCountry)
 			{
-				$address['addressCountry'] = $this->owner->BusinessDataAddressCountry;
+				$address['addressCountry'] = $this->getOwner()->BusinessDataAddressCountry;
 			}
-			if ($this->owner->BusinessDataAddressLocality)
+			if ($this->getOwner()->BusinessDataAddressLocality)
 			{
-				$address['addressLocality'] = $this->owner->BusinessDataAddressLocality;
+				$address['addressLocality'] = $this->getOwner()->BusinessDataAddressLocality;
 			}
-			if ($this->owner->BusinessDataAddressRegion)
+			if ($this->getOwner()->BusinessDataAddressRegion)
 			{
-				$address['addressRegion'] = $this->owner->BusinessDataAddressRegion;
+				$address['addressRegion'] = $this->getOwner()->BusinessDataAddressRegion;
 			}
-			if ($this->owner->BusinessDataPostalCode)
+			if ($this->getOwner()->BusinessDataPostalCode)
 			{
-				$address['postalCode'] = $this->owner->BusinessDataPostalCode;
+				$address['postalCode'] = $this->getOwner()->BusinessDataPostalCode;
 			}
-			if ($this->owner->BusinessDataStreetAddress)
+			if ($this->getOwner()->BusinessDataStreetAddress)
 			{
-				$address['streetAddress'] = $this->owner->BusinessDataStreetAddress;
+				$address['streetAddress'] = $this->getOwner()->BusinessDataStreetAddress;
 			}
 
 			$data['address'] = $address;
 		}
 
 		/** Add lat/long if applicable */
-		if ($this->owner->BusinessDataGeoLongitude && $this->owner->BusinessDataGeoLatitude)
+		if ($this->getOwner()->BusinessDataGeoLongitude && $this->getOwner()->BusinessDataGeoLatitude)
 		{
-			$coordinates = array(
-				'@type'     =>  'GeoCoordinates',
-				'latitude'  =>  $this->owner->BusinessDataGeoLatitude,
-				'longitude' =>  $this->owner->BusinessDataGeoLongitude,
-			);
+			$coordinates = ['@type'     =>  'GeoCoordinates', 'latitude'  =>  $this->getOwner()->BusinessDataGeoLatitude, 'longitude' =>  $this->getOwner()->BusinessDataGeoLongitude];
 		}
 
 		/** Include contact details, if they're set */
-		if ($this->owner->BusinessDataMainTelephone)
+		if ($this->getOwner()->BusinessDataMainTelephone)
 		{
-			$data['telephone'] = $this->owner->BusinessDataMainTelephone;
+			$data['telephone'] = $this->getOwner()->BusinessDataMainTelephone;
 		}
-		if ($this->owner->BusinessDataMainEmail)
+		if ($this->getOwner()->BusinessDataMainEmail)
 		{
-			$data['email'] = $this->owner->BusinessDataMainEmail;
+			$data['email'] = $this->getOwner()->BusinessDataMainEmail;
 		}
 
 		/** Include co-ordinates and a map, if applicable */
@@ -382,16 +376,16 @@ class SiteConfigExtension extends DataExtension
 			$data['geo'] = $coordinates;
 		}
 
-		if ($this->owner->getMicroDataSchemaType(true) === 'LocalBusiness')
+		if ($this->getOwner()->getMicroDataSchemaType(true) === 'LocalBusiness')
 		{
-			if ($this->owner->getSocialMetaMapLink())
+			if ($this->getOwner()->getSocialMetaMapLink())
 			{
-				$data['hasMap'] = $this->owner->getSocialMetaMapLink();
+				$data['hasMap'] = $this->getOwner()->getSocialMetaMapLink();
 			}
 		}
 
 		/** Include any social networks */
-		$socialNetworks = $this->owner->SocialNetworks();
+		$socialNetworks = $this->getOwner()->SocialNetworks();
 
 		if (($socialNetworks) && (count($socialNetworks) > 0))
 		{
@@ -405,7 +399,7 @@ class SiteConfigExtension extends DataExtension
 			$data['sameAs'] = $sameAs;
 		}
 
-		$this->owner->invokeWithExtensions('updateSchemaData', $data);
+		$this->getOwner()->invokeWithExtensions('updateSchemaData', $data);
 
 		return $data;
 	}
@@ -413,9 +407,9 @@ class SiteConfigExtension extends DataExtension
 	/** Returns the schema type */
 	public function getMicroDataSchemaType($baseTypeOnly = false): bool
 	{
-		return ($this->owner->BusinessDataSubSchema && !$baseTypeOnly)
-			? $this->owner->BusinessDataSubSchema
-			: $this->owner->BusinessDataMainSchema;
+		return ($this->getOwner()->BusinessDataSubSchema && !$baseTypeOnly)
+			? $this->getOwner()->BusinessDataSubSchema
+			: $this->getOwner()->BusinessDataMainSchema;
 	}
 
 	/**
@@ -425,11 +419,11 @@ class SiteConfigExtension extends DataExtension
 	 */
 	public function getSocialMetaMapLink(): string
 	{
-		$address 	= $this->owner->getAddressArray();
+		$address 	= $this->getOwner()->getAddressArray();
 
-		if (!empty($this->owner->BusinessDataLegalName))
+		if (!empty($this->getOwner()->BusinessDataLegalName))
 		{
-			$address 	= array_merge([$this->owner->BusinessDataLegalName], $address);
+			$address 	= array_merge([$this->getOwner()->BusinessDataLegalName], $address);
 		}
 
 		if (!empty($address))
@@ -437,6 +431,6 @@ class SiteConfigExtension extends DataExtension
 			return 'https://www.google.co.uk/maps/place/' . urlencode(implode(", ", $address));
 		}
 
-		return null;
+		return '';
 	}
 }
