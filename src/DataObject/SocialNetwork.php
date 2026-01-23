@@ -2,7 +2,7 @@
 
 namespace Roseblade\BusinessData\DataObject;
 
-use BurnBright\ExternalURLField\ExternalURLField;
+use Fromholdio\ExternalURLField\ExternalURLField;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\DataObject;
