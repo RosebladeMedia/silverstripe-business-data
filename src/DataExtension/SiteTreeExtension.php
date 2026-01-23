@@ -4,10 +4,9 @@ namespace Roseblade\BusinessData\DataExtension;
 
 use SilverStripe\CMS\Controllers\RootURLController;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\SiteConfig\SiteConfig;
 
-class SiteTreeExtension extends DataExtension
+class SiteTreeExtension extends \SilverStripe\Core\Extension
 {
 	public const INCLUDE_SITE_JSONLD_HOME = 'home';
 	public const INCLUDE_SITE_JSONLD_ALL = 'all';
@@ -39,7 +38,7 @@ class SiteTreeExtension extends DataExtension
 	public function MetaComponents(array &$tags)
 	{
 		$schemaData 			= null;
-		$includeSiteSchemaData	= $this->owner->getIncludeSiteSchemaData();
+		$includeSiteSchemaData	= $this->getOwner()->getIncludeSiteSchemaData();
 
 		/** Are we including it? */
 		if ($includeSiteSchemaData)
@@ -54,7 +53,7 @@ class SiteTreeExtension extends DataExtension
 
 			if (Config::inst()->get(self::class, 'minify_jsonld') === false)
 			{
-				$options = $options | JSON_PRETTY_PRINT;
+				$options |= JSON_PRETTY_PRINT;
 			}
 
 			$tags['ld+json'] = [
@@ -66,7 +65,7 @@ class SiteTreeExtension extends DataExtension
 			];
 		}
 
-		$icons 	= $this->owner->getIconCode();
+		$icons 	= $this->getOwner()->getIconCode();
 
 		if (!empty($icons))
 		{
@@ -83,7 +82,7 @@ class SiteTreeExtension extends DataExtension
 	 */
 	public function setIncludeSiteSchemaData(bool $include)
 	{
-		$this->owner->include_site_jsonld_override 	= $include;
+		$this->getOwner()->include_site_jsonld_override 	= $include;
 	}
 
 	/**
@@ -93,20 +92,20 @@ class SiteTreeExtension extends DataExtension
 	 */
 	public function getIncludeSiteSchemaData(): bool
 	{
-		$currentLink = trim($this->owner->Link(), '/');
+		$currentLink = trim((string) $this->getOwner()->Link(), '/');
 
 		/** If it's specifically set to do either/or, we'll abide by that */
-		if (isset($this->owner->include_site_jsonld_override))
+		if (isset($this->getOwner()->include_site_jsonld_override))
 		{
-			return $this->owner->include_site_jsonld_override;
+			return $this->getOwner()->include_site_jsonld_override;
 		}
 		/** Else if it's set to "home", and the current link is "home", return true */
-		elseif (($this->owner->config()->include_site_jsonld == self::INCLUDE_SITE_JSONLD_HOME) && ($currentLink == '' || $currentLink === RootURLController::get_homepage_link()))
+		elseif (($this->getOwner()->config()->include_site_jsonld == self::INCLUDE_SITE_JSONLD_HOME) && ($currentLink == '' || $currentLink === RootURLController::get_homepage_link()))
 		{
 			return true;
 		}
 		/** Else if it's set to include it on all pages, return true */
-		elseif ($this->owner->config()->include_site_jsonld == self::INCLUDE_SITE_JSONLD_ALL)
+		elseif ($this->getOwner()->config()->include_site_jsonld == self::INCLUDE_SITE_JSONLD_ALL)
 		{
 			return true;
 		}
@@ -134,11 +133,11 @@ class SiteTreeExtension extends DataExtension
 			$newSizeH	= 256;
 			$newSizeW	= 256;
 
-			foreach ($this->owner->config()->icons as $icon)
+			foreach ($this->getOwner()->config()->icons as $icon)
 			{
 				if (isset($icon['sizes']))
 				{
-					list($newSizeH, $newSizeW) 	= explode("x", $icon['sizes']);
+					[$newSizeH, $newSizeW] 	= explode("x", (string) $icon['sizes']);
 				}
 
 				$newIcon 		= $this->getIconFile($newSizeH, $newSizeW);
@@ -149,7 +148,7 @@ class SiteTreeExtension extends DataExtension
 
 					foreach ($icon as $attr => $val)
 					{
-						if ((strpos($val, "{") !== false) && (strpos($val, "}")) !== false)
+						if ((str_contains((string) $val, "{")) && str_contains((string) $val, "}"))
 						{
 							$func 			= str_replace(['{', '}'], '', $val);
 							$val 			= str_replace("{" . $func . "}", $newIcon->{$func}(), $val);
@@ -173,21 +172,19 @@ class SiteTreeExtension extends DataExtension
 	/**
 	 * Generates a new icon in the given size
 	 *
-	 * @param mixed $sizeH
-	 * @param mixed $sizeW
-	 * 
+	 *
 	 * @return [type]
 	 */
-	public function getIconFile($sizeH, $sizeW)
+	public function getIconFile(mixed $sizeH, mixed $sizeW)
 	{
 		$siteConfig = SiteConfig::current_site_config();
 		$icon 		= $siteConfig->FavIcon;
-		$function 	= $this->owner->config()->icon_size_function;
+		$function 	= $this->getOwner()->config()->icon_size_function;
 
 		/** Padding is the only one with 3 parameters (for the fill) */
 		if (strtolower($function) == "pad")
 		{
-			$newIcon 	= $icon->Pad($sizeH, $sizeW, $this->owner->config()->icon_fill);
+			$newIcon 	= $icon->Pad($sizeH, $sizeW, $this->getOwner()->config()->icon_fill);
 			return $newIcon;
 		}
 		else

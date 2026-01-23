@@ -2,7 +2,7 @@
 
 namespace Roseblade\BusinessData\DataObject;
 
-use BurnBright\ExternalURLField\ExternalURLField;
+use Fromholdio\ExternalURLField\ExternalURLField;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\ORM\DataObject;
@@ -54,6 +54,7 @@ class SocialNetwork extends DataObject
 		'Label'
 	];
 
+	#[\Override]
 	public function getCMSFields()
 	{
 		$fields 	= parent::getCMSFields();
@@ -91,14 +92,10 @@ class SocialNetwork extends DataObject
 	{
 		$networkName 	= $this->getNetworkList();
 
-		if (isset($networkName[$this->NetworkName]))
-		{
-			return $networkName[$this->NetworkName];
-		}
-
-		return $this->NetworkName;
+		return $networkName[$this->NetworkName] ?? $this->NetworkName;
 	}
 
+	#[\Override]
 	public function getTitle()
 	{
 		return $this->Label;
