@@ -1,88 +1,91 @@
-# Silverstripe CMS supported module skeleton
+# roseblade/businessdata
 
-A useful skeleton to more easily create a [Silverstripe CMS Module](https://docs.silverstripe.org/en/developer_guides/extending/modules/) that conform to the
-[Module Standard](https://docs.silverstripe.org/en/developer_guides/extending/modules/#module-standard).
+A Silverstripe module that adds business contact details, structured data (JSON-LD), favicon generation, and social network links to your site via `SiteConfig`.
 
-This README contains descriptions of the parts of this module base you should customise to meet you own module needs.
-For example, the module name in the H1 above should be you own module name, and the description text you are reading now
-is where you should provide a good short explanation of what your module does.
+## Features
 
-Where possible we have included default text that can be included as is into your module and indicated in
-other places where you need to customise it
+- Business name, description, legal name, address, telephone, and email fields on `SiteConfig`
+- Automatic geo-coordinates lookup from postcode via the Postcodes.io API
+- JSON-LD structured data (`schema.org`) injected into page `<head>` — supports `Organization`, `LocalBusiness`, and `Event` types
+- Favicon generation at multiple sizes from a single uploaded image, injected as `<link>` tags
+- Social network links (stored as `SocialNetwork` records, exposed as `sameAs` in JSON-LD)
 
-Below is a template of the sections of your `README.md` you should ideally include to met the Module Standard
-and help others make use of your modules.
+## Requirements
 
-## Steps to prepare this module for your own use
-
-Ensure you read the
-['publishing a module'](https://docs.silverstripe.org/en/developer_guides/extending/how_tos/publish_a_module/) guide
-and update your module's `composer.json` to designate your code as a Silversripe CMS module.
-
-- Clone this repository into a folder
-- Add your name/organisation to `LICENSE.md`
-- Update this README with information about your module. Ensure sections that aren't relevant are deleted and
-placeholders are edited where relevant
-- Review the README files in the various provided directories. You should ultimately delete these README files when you have added your code
-- Update the module's `composer.json` with your requirements and package name
-- Update (or remove) `package.json` with your requirements and package name. Run `yarn install` (or remove `yarn.lock`) to
-ensure dependencies resolve correctly
-- Clear the git history by running `rm -rf .git && git init`
-- Add and push to a VCS repository
-- Either [publish](https://getcomposer.org/doc/02-libraries.md#publishing-to-packagist) the module on packagist.org, or add a [custom repository](https://getcomposer.org/doc/02-libraries.md#publishing-to-a-vcs) to your main `composer.json`
-- Require the module in your main `composer.json`
-- If you need to build your css or js and are using components, injector, scss variables, etc from `silverstripe/admin`:
-  - Ensure that `silverstripe/admin` is installed with `composer install --prefer-source` instead of the default `--prefer-dist` (you can use `composer reinstall silverstripe/admin --prefer-source` if you already installed it)
-  - If you are relying on additional dependencies from `silverstripe/admin` instead of adding them as dependencies in your `package.json` file, you need to install third party dependencies in `silverstripe/admin` by running `yarn install` in the `vendor/silverstripe/admin/` directory.
-- Start developing your module!
-
-## License
-
-See [License](LICENSE.md)
-
-This module template defaults to using the "BSD-3-Clause" license. The BSD-3 license is one of the most
-permissive open-source license and is used by most Silverstripe CMS module.
-
-To publish your module under a different license:
-
-- update the [`license.md`](LICENSE.md) file
-- update the `license' key in your [`composer.json`](composer.json).
-
-You can use [choosealicense.com](https://choosealicense.com) to help you pick a suitable license for your project.
-
-You do not need to keep this section in your README file - the `LICENSE.md` file is sufficient.
+- Silverstripe CMS ^6.0
+- PHP ^8.1
 
 ## Installation
 
-Replace `silverstripe-module/skeleton` in the command below with the composer name of your module.
-
 ```sh
-composer require silverstripe-module/skeleton
+composer require roseblade/businessdata
 ```
 
-**Note:** When you have completed your module, submit it to Packagist or add it as a VCS repository to your
-project's composer.json, pointing to the private repository URL.
+Run a database build after installation:
 
-## Documentation
+```sh
+vendor/bin/sake db:build
+```
 
-- [Documentation readme](docs/en/README.md)
+or by visiting `/dev/build?flush=all` in your browser
 
-Add links into your `docs/<language>` folder here unless your module only requires minimal documentation
-in that case, add here and remove the docs folder. You might use this as a quick table of content if you
-mhave multiple documentation pages.
+## Configuration
 
-## Example configuration
+### JSON-LD structured data
 
-If your module makes use of the config API in Silverstripe CMS it's a good idea to provide an example config
-here that will get the module working out of the box and expose the user to the possible configuration options.
-Though note that in many cases simply linking to the documentation is enough.
-
-Provide a syntax-highlighted code examples where possible.
+By default, JSON-LD is only output on the home page. You can change this in YAML:
 
 ```yaml
-Page:
-  config_option: true
-  another_config:
-    - item1
-    - item2
+Silverstripe\CMS\Model\SiteTree:
+  include_site_jsonld: home   # 'home' (default) or 'all'
+```
+
+To disable minification of the JSON-LD output (good for debugging purposes):
+
+```yaml
+Roseblade\BusinessData\DataExtension\SiteTreeExtension:
+  minify_jsonld: false
+```
+
+You can also control inclusion on a per-page basis in PHP:
+
+```php
+$page->setIncludeSiteSchemaData(true);  // force include
+$page->setIncludeSiteSchemaData(false); // force exclude
+```
+
+### Favicon
+
+Upload a favicon image via **Settings > Business > Branding** in the CMS. The module will automatically generate and inject `<link>` tags at the following sizes: 16×16, 32×32, 96×96, 180×180, 300×300, and 512×512.
+
+The default behaviour pads the image to a square with a white fill. You can override the fill colour or use a different resize function:
+
+```yaml
+Roseblade\BusinessData\DataExtension\SiteTreeExtension:
+  icon_fill: "#000000"         # background fill colour for padding (default: #ffffff)
+  icon_size_function: pad      # Silverstripe image manipulation method (default: pad)
+```
+
+To customise which icon sizes and `<link>` attributes are generated:
+
+```yaml
+Roseblade\BusinessData\DataExtension\SiteTreeExtension:
+  icons:
+    - rel: icon
+      sizes: 32x32
+      type: "{getMimeType}"
+    - rel: apple-touch-icon
+      sizes: 180x180
+      type: "{getMimeType}"
+```
+
+Values wrapped in `{}` are resolved as method calls on the generated image object (e.g. `{getMimeType}` calls `$image->getMimeType()`).
+
+### Geo-coordinates
+
+When a postcode is saved on `SiteConfig`, the module will automatically look up the latitude and longitude via the Postcodes.io API. To disable this:
+
+```yaml
+Roseblade\BusinessData\DataExtension\SiteConfigExtension:
+  update_geodata_by_api: false
 ```

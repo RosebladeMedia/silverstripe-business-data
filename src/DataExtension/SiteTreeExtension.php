@@ -127,7 +127,7 @@ class SiteTreeExtension extends \SilverStripe\Core\Extension
 
 		$icons 		= [];
 
-		if (isset($siteConfig->FavIcon))
+		if ($siteConfig->FavIcon()->exists())
 		{
 			$count 		= 0;
 			$newSizeH	= 256;
@@ -178,7 +178,7 @@ class SiteTreeExtension extends \SilverStripe\Core\Extension
 	public function getIconFile(mixed $sizeH, mixed $sizeW)
 	{
 		$siteConfig = SiteConfig::current_site_config();
-		$icon 		= $siteConfig->FavIcon;
+		$icon 		= $siteConfig->FavIcon();
 		$function 	= $this->getOwner()->config()->icon_size_function;
 
 		/** Padding is the only one with 3 parameters (for the fill) */
