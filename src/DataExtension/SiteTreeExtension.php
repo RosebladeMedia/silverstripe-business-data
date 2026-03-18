@@ -35,7 +35,7 @@ class SiteTreeExtension extends \SilverStripe\Core\Extension
 	 * 
 	 * @param array $tags
 	 */
-	public function MetaComponents(array &$tags)
+	public function updateMetaComponents(array &$tags)
 	{
 		$schemaData 			= null;
 		$includeSiteSchemaData	= $this->getOwner()->getIncludeSiteSchemaData();
