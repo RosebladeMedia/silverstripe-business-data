@@ -127,7 +127,7 @@ class SiteTreeExtension extends \SilverStripe\Core\Extension
 
 		$icons 		= [];
 
-		if (isset($siteConfig->FavIcon))
+		if ($siteConfig->FavIcon()->exists())
 		{
 			$count 		= 0;
 			$newSizeH	= 256;

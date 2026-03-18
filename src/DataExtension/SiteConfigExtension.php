@@ -405,7 +405,7 @@ class SiteConfigExtension extends \SilverStripe\Core\Extension
 	}
 
 	/** Returns the schema type */
-	public function getMicroDataSchemaType($baseTypeOnly = false): bool
+	public function getMicroDataSchemaType($baseTypeOnly = false): string
 	{
 		return ($this->getOwner()->BusinessDataSubSchema && !$baseTypeOnly)
 			? $this->getOwner()->BusinessDataSubSchema
