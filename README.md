@@ -2,6 +2,8 @@
 
 A Silverstripe module that adds business contact details, structured data (JSON-LD), favicon generation, and social network links to your site via `SiteConfig`.
 
+This module is fully standalone: it has no dependency on `roseblade/core` or any other Roseblade package, and works completely on its own. A separate package, [`roseblade/businessdata-bridge`](https://bitbucket.org/roseblade/businessdata-bridge), makes this module's data available to the wider Roseblade ecosystem for sites that use it; installing that bridge is entirely optional and this module never needs to know it exists.
+
 ## Features
 
 - Business name, description, legal name, address, telephone, and email fields on `SiteConfig`

@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * A single social network profile link belonging to SiteConfig.
+ *
+ * @package roseblade/businessdata
+ * @author  Roseblade Media
+ */
+
+declare(strict_types=1);
+
 namespace Roseblade\BusinessData\DataObject;
 
 use Fromholdio\ExternalURLField\ExternalURLField;
