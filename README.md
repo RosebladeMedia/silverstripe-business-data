@@ -1,14 +1,14 @@
 # roseblade/businessdata
 
-A Silverstripe module that adds business contact details, structured data (JSON-LD), favicon generation, and social network links to your site via `SiteConfig`.
+A Silverstripe module that adds business contact details, structured data (JSON-LD), and favicon generation to your site via `SiteConfig`.
 
 ## Features
 
 - Business name, description, legal name, address, telephone, and email fields on `SiteConfig`
 - Automatic geo-coordinates lookup from postcode via the Postcodes.io API
-- JSON-LD structured data (`schema.org`) injected into page `<head>` — supports `Organization`, `LocalBusiness`, and `Event` types
+- JSON-LD structured data (`schema.org`) injected into page `<head>`, supporting `Organization`, `LocalBusiness`, and `Event` types
 - Favicon generation at multiple sizes from a single uploaded image, injected as `<link>` tags
-- Social network links (stored as `SocialNetwork` records, exposed as `sameAs` in JSON-LD)
+- Optional social network links via [`roseblade/silverstripe-social-networks`](https://github.com/RosebladeMedia/silverstripe-social-networks), a separate, optional module that adds a `sameAs` entry to the JSON-LD output when installed. See [Social Networks](#social-networks) below.
 
 ## Requirements
 
@@ -89,3 +89,41 @@ When a postcode is saved on `SiteConfig`, the module will automatically look up 
 Roseblade\BusinessData\DataExtension\SiteConfigExtension:
   update_geodata_by_api: false
 ```
+
+## Social Networks
+
+From version 2.0.0, this module no longer stores social network links itself. That functionality has moved to a separate, optional module, [`roseblade/silverstripe-social-networks`](https://github.com/RosebladeMedia/silverstripe-social-networks), which can attach social network links to any DataObject, not just `SiteConfig`. See the [changelog](CHANGELOG.md) for the full reasoning and an upgrade guide if you are updating from an earlier version.
+
+### Adding social network links to your site
+
+Install the new module alongside this one:
+
+```sh
+composer require roseblade/silverstripe-social-networks
+```
+
+Apply its extension to `SiteConfig` in your own project YAML:
+
+```yaml
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Roseblade\SocialNetworks\Extension\WithSocialNetworks
+  has_many:
+    SocialNetworks: Roseblade\SocialNetworks\DataObject\SocialNetwork.Owner
+```
+
+Run `dev/build`. A "Social networks" tab appears in **Settings**, and any links you add there are automatically included as a `sameAs` entry in this module's JSON-LD output, added via `SiteConfigSocialNetworksExtension`, which hooks into the same `updateSchemaData` extension point that lets any module contribute to the structured data this module produces.
+
+If `roseblade/silverstripe-social-networks` is not installed, nothing changes: the JSON-LD output simply has no `sameAs` entry, and no error occurs.
+
+See `roseblade/silverstripe-social-networks`'s own documentation for the full detail on attaching social network links to other DataObjects, such as a team or a player, beyond `SiteConfig`.
+
+### Upgrading from a version with built-in social networks
+
+If your site already has social network links stored by an earlier version of this module, install `roseblade/silverstripe-social-networks`, apply the extension as shown above, run `dev/build`, then run:
+
+```sh
+vendor/bin/sake tasks:Roseblade-BusinessData-BuildTask-MigrateSocialNetworksTask
+```
+
+This copies your existing links into the new module's table. It does not remove the old data, and it is safe to run more than once. If you run `dev/build` before running this task, a warning is printed reminding you to do so.
