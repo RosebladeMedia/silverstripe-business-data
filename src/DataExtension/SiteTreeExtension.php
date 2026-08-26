@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Emits business structured data and favicon tags into page meta components.
+ *
+ * @package roseblade/businessdata
+ * @author  Roseblade Media
+ */
+
+declare(strict_types=1);
+
 namespace Roseblade\BusinessData\DataExtension;
 
 use SilverStripe\CMS\Controllers\RootURLController;

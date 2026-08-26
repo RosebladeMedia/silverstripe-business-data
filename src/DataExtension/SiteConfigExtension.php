@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * Adds business contact, address and structured-data fields to SiteConfig.
+ *
+ * @package roseblade/businessdata
+ * @author  Roseblade Media
+ */
+
+declare(strict_types=1);
+
 namespace Roseblade\BusinessData\DataExtension;
 
 use BeastBytes\PostcodesIo\PostcodesIo;
