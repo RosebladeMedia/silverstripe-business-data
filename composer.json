@@ -15,8 +15,10 @@
 		"league/iso3166": "^4.3",
 		"innoweb/silverstripe-international-phone-number-field": "^6.0",
 		"sheadawson/silverstripe-dependentdropdownfield": "^4.0",
-		"fromholdio/silverstripe-externalurlfield": "^2.0",
 		"beastbytes/postcodesio": "^1.0"
+	},
+	"suggest": {
+		"roseblade/silverstripe-social-networks": "Adds a Social Networks tab to Business, publishing sameAs links into the JSON-LD structured data via the updateSchemaData extension hook"
 	},
 	"autoload": {
 		"psr-4": {

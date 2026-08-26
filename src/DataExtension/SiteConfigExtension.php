@@ -14,7 +14,6 @@ namespace Roseblade\BusinessData\DataExtension;
 use BeastBytes\PostcodesIo\PostcodesIo;
 use Innoweb\InternationalPhoneNumberField\Forms\InternationalPhoneNumberField;
 use League\ISO3166\ISO3166;
-use Roseblade\BusinessData\DataObject\SocialNetwork;
 use Sheadawson\DependentDropdown\Forms\DependentDropdownField;
 
 use SilverStripe\AssetAdmin\Forms\UploadField;
@@ -23,8 +22,6 @@ use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\EmailField;
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\GridField\GridField;
-use SilverStripe\Forms\GridField\GridFieldConfig_RecordEditor;
 use SilverStripe\Forms\HeaderField;
 use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\TextField;
@@ -85,13 +82,6 @@ class SiteConfigExtension extends \SilverStripe\Core\Extension
 		'FavIcon'			=> Image::class
 	];
 
-	/** 
-	 * @var array
-	 */
-	private static $has_many 	= [
-		'SocialNetworks'	=> SocialNetwork::class
-	];
-
 	/**
 	 * @var array
 	 */
@@ -150,16 +140,6 @@ class SiteConfigExtension extends \SilverStripe\Core\Extension
 
 			]
 		);
-
-		/** Social media networks */
-		$fields->addFieldToTab(
-			'Root.Business.Contact.Social',
-			$fieldSocialNetworks 	= GridField::create('SocialNetworks', 'Social Networks', $this->getOwner()->SocialNetworks())
-		);
-
-		$config = GridFieldConfig_RecordEditor::create();
-
-		$fieldSocialNetworks->setConfig($config);
 
 		/** Branding etc */
 		$fields->addFieldsToTab(
@@ -393,21 +373,14 @@ class SiteConfigExtension extends \SilverStripe\Core\Extension
 			}
 		}
 
-		/** Include any social networks */
-		$socialNetworks = $this->getOwner()->SocialNetworks();
-
-		if (($socialNetworks) && (count($socialNetworks) > 0))
-		{
-			$sameAs = [];
-
-			foreach ($socialNetworks as $network)
-			{
-				$sameAs[] = $network->URL;
-			}
-
-			$data['sameAs'] = $sameAs;
-		}
-
+		/**
+		 * Social network links, favicon handling, and anything else
+		 * belonging to a separate module hook in here. For example,
+		 * roseblade/silverstripe-social-networks' own SiteConfig
+		 * extension adds a `sameAs` entry from whatever SocialNetwork
+		 * records are attached to this SiteConfig, if that module is
+		 * installed and the has_many relation has been declared.
+		 */
 		$this->getOwner()->invokeWithExtensions('updateSchemaData', $data);
 
 		return $data;

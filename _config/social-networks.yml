@@ -1,0 +1,21 @@
+---
+Name: businessdata-social-networks
+Only:
+  classexists: 'Roseblade\SocialNetworks\Extension\WithSocialNetworks'
+---
+# Only takes effect when roseblade/silverstripe-social-networks is
+# installed; businessdata never requires it, only suggests it (see
+# composer.json). SiteConfigExtension's getMicroDataSchemaData() has no
+# reference to WithSocialNetworks or SocialNetwork anywhere: the
+# sameAs entry this produces reaches the schema data purely through
+# the updateSchemaData extension hook, applied below.
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Roseblade\SocialNetworks\Extension\WithSocialNetworks
+    - Roseblade\BusinessData\DataExtension\SiteConfigSocialNetworksExtension
+  has_many:
+    SocialNetworks: Roseblade\SocialNetworks\DataObject\SocialNetwork.Owner
+
+SilverStripe\Dev\Command\DbBuild:
+  extensions:
+    - Roseblade\BusinessData\DataExtension\WarnAboutUnmigratedSocialNetworksExtension
